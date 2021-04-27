@@ -1,0 +1,16 @@
+{
+  "store": "google",
+  "gameEngine": "unity",
+  "audienceModeBuildOnly": "non-children",
+  "orientation": "portrait",
+  "geoLocationServer": "ttplugins.ttpsdk.info",
+  "appId": "",
+  "bundleId": "com.snowfrozen.rescue.driving3d",
+  "testMode": false,
+  "isAdMob": true,
+  "appBuildConfig": {
+    "admob": {
+      "application": ""
+    }
+  }
+}
