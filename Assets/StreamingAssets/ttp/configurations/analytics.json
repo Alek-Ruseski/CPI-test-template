@@ -1,12 +1,12 @@
 {
-  "included": true,
+  "included": false,
   "firebase": {
-    "googleAppId": "1:385439196652:android:50a2a332ac672220880cc9",
-    "apiKey": "AIzaSyAP-Ml9oISy1F6c5f4jsPMws3RkoAFH1VQ",
-    "projectId": "cl-rescue-driving-3d",
-    "clientId": "385439196652-en590uhfdrvbd7hhst6gaksgod964ssv.apps.googleusercontent.com",
-    "senderId": "385439196652",
-    "storageBucket": "cl-rescue-driving-3d.appspot.com",
+    "googleAppId": "",
+    "apiKey": "",
+    "projectId": "",
+    "clientId": "",
+    "senderId": "",
+    "storageBucket": "",
     "databaseURL": ""
   }
 }

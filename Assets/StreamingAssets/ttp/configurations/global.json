@@ -5,7 +5,7 @@
   "orientation": "portrait",
   "geoLocationServer": "ttplugins.ttpsdk.info",
   "appId": "",
-  "bundleId": "com.snowfrozen.rescue.driving3d",
+  "bundleId": "com.snowfrozen.flappy.sausage.run",
   "testMode": false,
   "isAdMob": true,
   "appBuildConfig": {
