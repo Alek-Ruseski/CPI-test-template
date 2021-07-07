@@ -26,7 +26,7 @@ extern "C" {
         NSString* nsStringSourceType = ttpPopupMgrConvertToNSString(string);
 
         if ([nsStringSourceType caseInsensitiveCompare:@"rateus"] == NSOrderedSame){
-            return TTP_RATEUS;
+            return TTP_RATEUS_TYPE;
         }
         else if ([nsStringSourceType caseInsensitiveCompare:@"interstitial"] == NSOrderedSame){
             return TTP_INTERSTITIAL;

@@ -1,4 +1,4 @@
-﻿
+
 
 using System;
 using System.Collections;
@@ -11,17 +11,20 @@ using UnityEditor.Android;
 using UnityEditor.AnimatedValues;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
+#if UNITY_IOS
 using UnityEditor.iOS.Xcode;
+#endif
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UI;
+using Object = System.Object;
+
 // ReSharper disable InconsistentNaming
 
 public class CLIKConfiguration : EditorWindow
 {
     private class Constants
     {
-        public const string CONFIG_FILE_PATH = "Assets/StreamingAssets/ttp/configurations/";
-        
         public const string CONFIG_FN_ANALYTICS = "analytics";
         public const string CONFIG_FN_APPSFLYER = "appsFlyer";
         public const string CONFIG_FN_BANNERS = "banners";
@@ -35,7 +38,23 @@ public class CLIKConfiguration : EditorWindow
         public const string CONFIG_FN_RV_INTER = "rewardedInterstitials";
         public const string CONFIG_FN_RATEUS = "rateUs";
         public const string CONFIG_FN_OPENADS = "openads";
-
+        public const string CONFIG_FN_PROMOTION = "promotion";
+        
+        public const string PACAKAGES_ANALYTICS = "analytics";
+        public const string PACAKAGES_APPSFLYER = "appsflyer";
+        public const string PACAKAGES_BANNERS = "banners";
+        public const string PACAKAGES_CRASHTOOL = "crashtool";
+        public const string PACAKAGES_ELEPHANT = "elephant";
+        public const string PACAKAGES_GLOBAL = "global";
+        public const string PACAKAGES_INTERSTITIALS = "interstitials";
+        public const string PACAKAGES_POPUPSMGR = "popupsmgr";
+        public const string PACAKAGES_PRIVACY_SETTINGS = "privacysettings";
+        public const string PACAKAGES_RV = "rewardedads";
+        public const string PACAKAGES_RV_INTER = "rewardedinterstitials";
+        public const string PACAKAGES_RATEUS = "rateus";
+        public const string PACAKAGES_OPENADS = "openads";
+        public const string PACAKAGES_PROMOTION = "promotion";
+        
         public const string CONFIG_KEY_INCLUDED = "included";
         
         public const string CONFIG_KEY_FIREBASE = "firebase";
@@ -112,13 +131,80 @@ public class CLIKConfiguration : EditorWindow
         public const string RES_NAME_CLIENT_ID = "client_id";
 
         public const string PLAYER_PREFS_KEY_FIRST_CONFIGURATION = "CLIK-firstTimeConfiguration";
-
+#if UNITY_2020_1_OR_NEWER
+        public const string REQUIRED_UNITY_VERSION = "2020.1.14f1";
+#else
+        public const string REQUIRED_UNITY_VERSION = "2019.3.15f1";
+#endif
 
     }
-   
+
+    static int CompareVersion()
+    {
+        var currentVersion = Application.unityVersion.ToLower().Split('.', 'f');
+        var requiredVersion = Constants.REQUIRED_UNITY_VERSION.ToLower().Split('.', 'f');
+        var len = Math.Min(currentVersion.Length, requiredVersion.Length);
+        for (int i = 0; i < len; i++)
+        {
+            var ver1 = int.Parse(currentVersion[i]);
+            var ver2 = int.Parse(requiredVersion[i]);
+            if (ver1 < ver2)
+                return -1;
+            else if (ver1 > ver2)
+                return 1;
+        }
+        return 0;
+    }
+
+    private static void CheckStripAndMinify()
+    {
+#if UNITY_ANDROID
+        if (PlayerSettings.GetManagedStrippingLevel(BuildTargetGroup.Android) > ManagedStrippingLevel.Low)
+        {
+            Debug.LogError("Stripping level in not \'Low\'");
+        }
+#if UNITY_2020_1_OR_NEWER
+        if (PlayerSettings.Android.minifyDebug)
+        {
+            Debug.LogError("Minify Debug is not \'Off\'");
+        }
+        if (PlayerSettings.Android.minifyRelease)
+        {
+            Debug.LogError("Minify Release is not \'Off\'");
+        }
+        if (PlayerSettings.Android.minifyWithR8)
+        {
+            Debug.LogError("Minify WithR8 is not \'Off\'");
+        }
+#else
+        if (EditorUserBuildSettings.androidDebugMinification != AndroidMinification.None)
+        {
+            Debug.LogError("Minify Debug is not \'None\'");
+        }
+        if (EditorUserBuildSettings.androidReleaseMinification != AndroidMinification.None)
+        {
+            Debug.LogError("Minify Release is not \'None\'");
+        }
+#endif
+#endif
+
+#if UNITY_IOS
+        if (PlayerSettings.GetManagedStrippingLevel(BuildTargetGroup.iOS) > ManagedStrippingLevel.Low)
+        {
+            Debug.LogError("Stripping level in not \'Low\'");
+        }
+#endif 
+    }
+
     [MenuItem("CLIK/Configure...")]
     private static void Init()
     {
+        if (CompareVersion() < 0)
+        {
+            Debug.LogError($"Current Unity version ({Application.unityVersion}) is lower than required ({Constants.REQUIRED_UNITY_VERSION})");
+        }
+
+        CheckStripAndMinify();
 
         var firstTimeConfiguration = PlayerPrefs.GetInt(Constants.PLAYER_PREFS_KEY_FIRST_CONFIGURATION, 0);
         if (firstTimeConfiguration == 0)
@@ -137,9 +223,92 @@ public class CLIKConfiguration : EditorWindow
 
         // Get existing open window or if none, make a new one:
         var window = GetWindow<CLIKConfiguration>(true, "CLIK Configuration");
+        window.minSize = new Vector2(600f, 600f);
         window.Show();
     }
-    
+
+    private static bool IsUnityPurchasingEnabled()
+    {
+#if UNITY_PURCHASING
+        return true;
+#endif
+        return false;
+    }
+
+    string newInAppId = "";
+    string newInAppIapId = "";
+    int newInAppType = 0;
+    bool newInAppNoAds = false;
+    bool showInAppsSection = false;
+
+    private void CheckForStripAndMinifySettings()
+    {
+#if UNITY_IOS
+        if (PlayerSettings.GetManagedStrippingLevel(BuildTargetGroup.iOS) > ManagedStrippingLevel.Low)
+        {
+            GUILayout.Label("Stripping level should be \'Low\' (PlayerSettings>iOS>Other Settings>Managed Stripping Level)", _redLabel);
+            if (GUILayout.Button("Set Stripping level to \'Low\'"))
+            {
+                PlayerSettings.SetManagedStrippingLevel(BuildTargetGroup.iOS, ManagedStrippingLevel.Low);
+            }
+        }
+#endif
+#if UNITY_ANDROID
+        if (PlayerSettings.GetManagedStrippingLevel(BuildTargetGroup.Android) > ManagedStrippingLevel.Low)
+        {
+            GUILayout.Label("Stripping level should be \'Low\' (PlayerSettings>Android>Other Settings>Managed Stripping Level)", _redLabel);
+            if (GUILayout.Button("Set Stripping level to \'Low\'"))
+            {
+                PlayerSettings.SetManagedStrippingLevel(BuildTargetGroup.Android, ManagedStrippingLevel.Low);
+            }
+        }    
+#if UNITY_2020_1_OR_NEWER
+        if (PlayerSettings.Android.minifyDebug)
+        {
+            GUILayout.Label("Minify Debug should be \'Off\' (PlayerSettings>Android>Publishing Settings>Minify)", _redLabel);
+            if (GUILayout.Button("Set Minify Debug to \'Off\'"))
+            {
+                PlayerSettings.Android.minifyDebug = false;
+            }
+        }
+        if (PlayerSettings.Android.minifyRelease)
+        {
+            GUILayout.Label("Minify Release should be \'Off\' (PlayerSettings>Android>Publishing Settings>Minify)", _redLabel);
+            if (GUILayout.Button("Set Minify Release to \'Off\'"))
+            {
+                PlayerSettings.Android.minifyRelease = false;
+            }
+        }
+        if (PlayerSettings.Android.minifyWithR8)
+        {
+            GUILayout.Label("Minify WithR8 should be \'Off\' (PlayerSettings>Android>Publishing Settings>Minify)", _redLabel);
+            if (GUILayout.Button("Set Minify WithR8 to \'Off\'"))
+            {
+                PlayerSettings.Android.minifyWithR8 = false;
+            }
+        }
+#else
+        if (EditorUserBuildSettings.androidDebugMinification != AndroidMinification.None)
+        {
+            GUILayout.Label("Minify Debug should be \'None\' (PlayerSettings>Android>Publishing Settings>Minify)", _redLabel);
+            if (GUILayout.Button("Set Minify Debug to \'None\'"))
+            {
+                EditorUserBuildSettings.androidDebugMinification = AndroidMinification.None;
+            }
+        }
+        if (EditorUserBuildSettings.androidReleaseMinification != AndroidMinification.None)
+        {
+            GUILayout.Label("Minify Release should be \'None\' (PlayerSettings>Android>Publishing Settings>Minify)", _redLabel);
+            if (GUILayout.Button("Set Minify Release to \'None\'"))
+            {
+                EditorUserBuildSettings.androidReleaseMinification = AndroidMinification.None;
+            }
+        }
+#endif
+
+#endif
+    }
+
     private void OnGUI()
     {
         EditorGUILayout.Space();
@@ -147,6 +316,9 @@ public class CLIKConfiguration : EditorWindow
         GUILayout.Label("Mode: " + (_configuration.globalConfig.testMode ? "Test" : "Production"));
         var currentId =
             PlayerSettings.GetApplicationIdentifier(isAndroid ? BuildTargetGroup.Android : BuildTargetGroup.iOS);
+        if (CompareVersion() < 0 )
+            GUILayout.Label($"Current Unity version ({Application.unityVersion}) is lower than required ({Constants.REQUIRED_UNITY_VERSION})", _redLabel);
+        CheckForStripAndMinifySettings();
         if (_configuration.globalConfig.bundleId != currentId)
         {
             GUILayout.Label("Application Id does not match Configuration Bundle Id. Current Id = " + currentId, _redLabel);
@@ -179,12 +351,12 @@ public class CLIKConfiguration : EditorWindow
         IndicateConfiguration("Rewarded Ads", _configuration.globalConfig.IsValid() && _configuration.rewardedAdsConfig.IsValid(), _configuration.rewardedAdsConfig.included);
         IndicateConfiguration("Rewarded Interstitials", _configuration.globalConfig.IsValid() && _configuration.rewardedInterConfig.IsValid(), _configuration.rewardedInterConfig.included);
         IndicateConfiguration("Open Ads", _configuration.globalConfig.IsValid() && _configuration.openAdsConfig.IsValid(), _configuration.openAdsConfig.included);
+        IndicateConfiguration("Stand", true, _configuration.promotionConfig.included);
         IndicateConfiguration("Rate Us", true, _configuration.rateUsConfig.included);
         IndicateConfiguration("Privacy Settings", true, _configuration.privacySettingsConfig.included);
-        
+
         GUILayout.FlexibleSpace();
-        
-        
+
         if (GUILayout.Button("Load Configuration"))
         {
             UnzipAnLoadConfiguration();
@@ -195,8 +367,14 @@ public class CLIKConfiguration : EditorWindow
         }
         GUILayout.Space(10);
     }
-    
-    
+
+    private void GuiLine(int i_height = 1)
+    {
+        Rect rect = EditorGUILayout.GetControlRect(false, i_height);
+        rect.height = i_height;
+        EditorGUI.DrawRect(rect, new Color(0.5f, 0.5f, 0.5f, 1));
+    }
+
     private interface IConfig
     {
         Dictionary<string, object> ToDict();
@@ -244,19 +422,18 @@ public class CLIKConfiguration : EditorWindow
 
         public void LoadFromFile()
         {
-            var fp = Constants.CONFIG_FILE_PATH + GetServiceName() + ".json";
-            if (File.Exists(fp))
+            if (TryReadConfigFile(GetServiceName(), out var json))
             {
-                var json = File.ReadAllText(fp);
+                Debug.Log("LoadFromFile:: " + GetServiceName() + " json = " + json);
                 Deserialize(json);
-#if UNITY_IOS
-                if (!string.IsNullOrEmpty(conversionModelType))
-                {
-                    var conversionRulesUrl = "http://promo-images.ttpsdk.info/conversionJS/"+conversionModelType+"/conversion.js";
-                    TTPEditorUtils.DownloadStringToFile(conversionRulesUrl, "Assets/StreamingAssets/ttp/conversion/conversion.js");
-                }
-#endif
             }
+#if UNITY_IOS
+            if (!string.IsNullOrEmpty(conversionModelType))
+            {
+                var conversionRulesUrl = "http://promo-images.ttpsdk.info/conversionJS/"+conversionModelType+"/conversion.js";
+                TTPEditorUtils.DownloadStringToFile(conversionRulesUrl, "Assets/StreamingAssets/ttp/conversion/conversion.js");
+            }
+#endif
         }
 
         public bool IsValid()
@@ -266,7 +443,7 @@ public class CLIKConfiguration : EditorWindow
 
         private void Deserialize(string json)
         {
-            if (json != null)
+            if (!string.IsNullOrEmpty(json))
             {
                 if (TTPJson.Deserialize(json) is Dictionary<string, object> dict)
                 {
@@ -441,10 +618,8 @@ public class CLIKConfiguration : EditorWindow
         
         public void LoadFromFile()
         {
-            var fp = Constants.CONFIG_FILE_PATH + GetServiceName() + ".json";
-            if (File.Exists(fp))
+            if (TryReadConfigFile(GetServiceName(), out var json))
             {
-                var json = File.ReadAllText(fp);
                 Deserialize(json);
             }
         }
@@ -563,10 +738,8 @@ public class CLIKConfiguration : EditorWindow
         
         public void LoadFromFile()
         {
-            var fp = Constants.CONFIG_FILE_PATH + GetServiceName() + ".json";
-            if (File.Exists(fp))
+            if(TryReadConfigFile(GetServiceName(), out var json))
             {
-                var json = File.ReadAllText(fp);
                 Deserialize(json);
             }
         }
@@ -784,7 +957,7 @@ public class CLIKConfiguration : EditorWindow
             return _isValid;
         }
     }
-
+    
     [Serializable]
     private class RewardedInterConfig : IConfig
     {
@@ -819,7 +992,39 @@ public class CLIKConfiguration : EditorWindow
             return _isValid;
         }
     }
+    
+    [Serializable]
+    private class PromotionConfig : IConfig
+    {
+        public bool included;
+        public string serverDomain;
+        private bool _isValid;
+        public Dictionary<string, object> ToDict()
+        {
+            return new Dictionary<string, object>()
+            {
+                {Constants.CONFIG_KEY_SERVER_DOMAIN, serverDomain}
+            };
+        }
 
+        public string GetServiceName()
+        {
+            return Constants.CONFIG_FN_PROMOTION;
+        }
+
+        public void LoadFromFile()
+        {
+            LoadConfigFromFile(this);
+            _isValid = !string.IsNullOrEmpty(serverDomain);
+        }
+        
+        public bool IsValid()
+        {
+            return _isValid;
+        }
+    }
+
+    
     private class PlatformConfiguration
     {
         public AppsflyerConfig appsflyerConfig = new AppsflyerConfig();
@@ -833,7 +1038,9 @@ public class CLIKConfiguration : EditorWindow
         public PrivacySettingsConfig privacySettingsConfig = new PrivacySettingsConfig();
         public RateUsConfig rateUsConfig = new RateUsConfig();
         public OpenAdsConfig openAdsConfig = new OpenAdsConfig();
+        public PromotionConfig promotionConfig = new PromotionConfig();
         public GlobalConfig globalConfig = new GlobalConfig();
+        
 
         private List<IConfig> _configs;
         private int _platformCode;
@@ -854,6 +1061,7 @@ public class CLIKConfiguration : EditorWindow
             _configs.Add(privacySettingsConfig);
             _configs.Add(rateUsConfig);
             _configs.Add(openAdsConfig);
+            _configs.Add(promotionConfig);
         }
         
         
@@ -874,15 +1082,16 @@ public class CLIKConfiguration : EditorWindow
         private void SaveConfigurationToFile(IConfig config)
         {
             var json = TTPJson.Serialize(config.ToDict());
-            var fp = Path.Combine(Constants.CONFIG_FILE_PATH, config.GetServiceName() + ".json");
+            Debug.Log("SaveConfigurationToFile:json=" + json);
+            var fp = GetTTPConfigPath(config.GetServiceName());
             if (File.Exists(fp))
             {
                 File.Delete(fp);
             }
 
-            if (!Directory.Exists(Constants.CONFIG_FILE_PATH))
+            if (!Directory.Exists(GetTTPConfigPath()))
             {
-                Directory.CreateDirectory(Constants.CONFIG_FILE_PATH);
+                Directory.CreateDirectory(CombineWithProjectPath(GetTTPConfigPath()));
             }
 
             File.WriteAllText(fp, json);
@@ -892,10 +1101,8 @@ public class CLIKConfiguration : EditorWindow
 
     private static void LoadConfigFromFile(IConfig config)
     {
-        var fp = Constants.CONFIG_FILE_PATH + config.GetServiceName() + ".json";
-        if (File.Exists(fp))
+        if(TryReadConfigFile(config.GetServiceName(), out var json))
         {
-            var json = File.ReadAllText(fp);
             if (!string.IsNullOrEmpty(json))
             {
                 EditorJsonUtility.FromJsonOverwrite(json,config);
@@ -905,6 +1112,8 @@ public class CLIKConfiguration : EditorWindow
 
     private static void UpdateAndroidRes(GlobalConfig globalConfig, AnalyticsConfig analyticsConfig)
     {
+        Debug.Log("UpdateAndroidRes:: " + (globalConfig != null ? globalConfig.admobAppId : "globalConfig null"));
+        Debug.Log("UpdateAndroidRes:: " + (analyticsConfig != null ? analyticsConfig.senderId : "analyticsConfig null"));
         var dic = new Dictionary<string, string>();
         if (!string.IsNullOrEmpty(globalConfig.admobAppId))
         {
@@ -934,8 +1143,10 @@ public class CLIKConfiguration : EditorWindow
             node.InnerText = kvp.Value;
             resPath.AppendChild(node);
         }
-        
+
+        Debug.Log("UpdateAndroidRes:: Save");
         xmlDoc.Save(Constants.ANDROID_MANIFEST_RES_FILE_PATH);
+        Debug.Log("UpdateAndroidRes:: Saved");
     }
     
     private static XmlNode GetXMlNode(XmlDocument xmlDocument, XmlNode xmlNode, string nameAttrVal, string type = "string")
@@ -966,8 +1177,13 @@ public class CLIKConfiguration : EditorWindow
         _greenIndicator.fixedHeight = 25;
         _greenIndicator.padding.right = 10;
         _greenIndicator.padding.top = 5;
+        _minusIcon.fixedHeight = 25;
+        _minusIcon.alignment = TextAnchor.MiddleRight;
+        _minusIcon.padding.right = 10;
+        _minusIcon.padding.top = 5;
         _okTexture = GetTexture("Assets/Tabtale/TTPlugins/CLIK/Editor/ok.png");
         _xTexture = GetTexture("Assets/Tabtale/TTPlugins/CLIK/Editor/x.png");
+        _minusTexture = GetTexture("Assets/Tabtale/TTPlugins/CLIK/Editor/minus.png");
         _okGuiContent = new GUIContent(_okTexture, "Configured");
         _xGuiContent = new GUIContent(_xTexture, "Not Configured");
         _redLabel.normal.textColor = Color.red;
@@ -993,13 +1209,14 @@ public class CLIKConfiguration : EditorWindow
     private GUIContent _xGuiContent;
     private Texture _okTexture;
     private Texture _xTexture;
-    
-    
+    private Texture _minusTexture;
+
     GUIStyle _nonbreakingLabelStyle = new GUIStyle();
    
     private GUIStyle _redLabel = new GUIStyle();
     private GUIStyle _greenLabel = new GUIStyle();
     private GUIStyle _greenIndicator = new GUIStyle();
+    private GUIStyle _minusIcon = new GUIStyle();
 
     private static bool UnzipAnLoadConfiguration()
     {
@@ -1008,12 +1225,12 @@ public class CLIKConfiguration : EditorWindow
         {
             return false;
         }
-        if (Directory.Exists(Constants.CONFIG_FILE_PATH))
+        if (Directory.Exists(GetTTPConfigPath()))
         {
-            Directory.Delete(Constants.CONFIG_FILE_PATH, true);
+            Directory.Delete(GetTTPConfigPath(), true);
         }
         PlayerPrefs.SetInt(Constants.PLAYER_PREFS_KEY_FIRST_CONFIGURATION,1);
-        ZipUtil.Unzip(zipPath,Constants.CONFIG_FILE_PATH);
+        ZipUtil.Unzip(zipPath,GetTTPConfigPath());
         _configuration = new PlatformConfiguration(0);
         _configuration.LoadConfigurationsFromFile();
         ModulateClik();
@@ -1035,33 +1252,95 @@ public class CLIKConfiguration : EditorWindow
         {
             GUILayout.Label(_xGuiContent, _greenIndicator);
         }
-        
+
         EditorGUILayout.EndHorizontal();
     }
 
-    private static TTPIncludedServicesScriptableObject GetInclusionScriptableObject()
+    private static void ResetIncludedServices(TTPIncludedServicesScriptableObject includedServices)
+    {
+        includedServices.analytics = false;
+        includedServices.appsFlyer = false;
+        includedServices.crashTool = false;
+        includedServices.banners = false;
+        includedServices.interstitials = false;
+        includedServices.openAds = false;
+        includedServices.rvs = false;
+        includedServices.rvInter = false;
+        includedServices.privacySettings = false;
+        includedServices.rateUs = false;
+        includedServices.promotion = false;
+    }
+    
+    private static TTPIncludedServicesScriptableObject GetInclusionScriptableObject(bool reset = false)
     {
         var path = "Assets/Tabtale/TTPlugins/CLIK/Resources/ttpIncludedServices.asset";
         if (File.Exists(path))
         {
             Debug.Log("GetInclusionScriptableObject ::  1");
-            return AssetDatabase.LoadAssetAtPath<TTPIncludedServicesScriptableObject>("Assets/Tabtale/TTPlugins/CLIK/Resources/ttpIncludedServices.asset");
+            var includedServices = AssetDatabase.LoadAssetAtPath<TTPIncludedServicesScriptableObject>(path);
+            if (reset)
+            {
+                ResetIncludedServices(includedServices);
+            }
+            return includedServices;
         }
         else
         {
             Debug.Log("GetInclusionScriptableObject ::  2");
             var includedServicesScriptableObject = ScriptableObject.CreateInstance<TTPIncludedServicesScriptableObject>();
-            if (!Directory.Exists("Assets/Tabtale/TTPlugins/CLIK/Resources"))
+            var dirpath = CombineWithProjectPath("Tabtale", "TTPlugins", "CLIK", "Resources");
+            if (!Directory.Exists(dirpath))
             {
-                Directory.CreateDirectory("Assets/Tabtale/TTPlugins/CLIK/Resources");
+                Directory.CreateDirectory(dirpath);
             }
             AssetDatabase.CreateAsset(includedServicesScriptableObject, path);
             AssetDatabase.SaveAssets();
             return includedServicesScriptableObject;
         }
-        
     }
 
+    private static string GetTTPConfigPath(string config = null)
+    {
+        if (config == null)
+        {
+            return CombineWithProjectPath("StreamingAssets", "ttp", "configurations");
+        }
+        return CombineWithProjectPath("StreamingAssets", "ttp", "configurations", config + ".json");
+    }
+    
+    private static string CombineWithProjectPath(params string[] pathComponents)
+    {
+        var path = Application.dataPath;
+        foreach(string c in pathComponents)
+        {
+            path = Path.Combine(path, c);
+        }
+        return path;
+    }
+
+    private static bool TryReadConfigFile(string configName, out string output)
+    {
+        var path = GetTTPConfigPath(configName);
+        Debug.Log("TryReadConfigFile:: " + configName + " path = " + path);
+        if (File.Exists(path))
+        {
+            output = File.ReadAllText(path);
+            return true;
+        }
+        if (EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android)
+        {
+            path = CombineWithProjectPath("Plugins", "Android", "assets", "ttp", "configurations",
+                configName + ".json");
+            if (File.Exists(path))
+            {
+                output = File.ReadAllText(path);
+                return true;
+            }
+        }
+        output = null;
+        return false;
+    }
+    
     private static void SaveInclusionScriptableObject(TTPIncludedServicesScriptableObject objToCpy)
     {
         var curObj = GetInclusionScriptableObject();
@@ -1074,8 +1353,17 @@ public class CLIKConfiguration : EditorWindow
         curObj.privacySettings = objToCpy.privacySettings;
         curObj.rateUs = objToCpy.rateUs;
         curObj.openAds = objToCpy.openAds;
+        curObj.promotion = objToCpy.promotion;
         EditorUtility.SetDirty(curObj);
         AssetDatabase.SaveAssets();
+        var saved = GetInclusionScriptableObject();
+        if (saved.privacySettings)
+        {
+            Debug.Log("SaveInclusionScriptableObject Privacy Settings is included");
+        } else
+        {
+            Debug.Log("SaveInclusionScriptableObject No Privacy Settings");
+        }
     }
     
     private static void ModulateClik()
@@ -1104,7 +1392,8 @@ public class CLIKConfiguration : EditorWindow
             {"ttpIncludedServices.rvInter",_configuration.rewardedInterConfig.included},
             {"ttpIncludedServices.privacySettings", _configuration.privacySettingsConfig.included},
             {"ttpIncludedServices.rateUs", _configuration.rateUsConfig.included},
-            {"ttpIncludedServices.openAds", _configuration.openAdsConfig.included}
+            {"ttpIncludedServices.openAds", _configuration.openAdsConfig.included},
+            {"ttpIncludedServices.promotion", _configuration.promotionConfig.included}
         };
 
         var msg = "";   
@@ -1118,7 +1407,73 @@ public class CLIKConfiguration : EditorWindow
     }
 
     
-    
+    public static void BuilderDetermineIncludedServices(string serverDomain, string bundleId)
+    {
+        Debug.Log("BuilderDetermineIncludedServices:: " + serverDomain);
+        if (!serverDomain.StartsWith("http"))
+        {
+            serverDomain = "http://" + serverDomain;
+        }
+        var isAndroid = EditorUserBuildSettings.activeBuildTarget == BuildTarget.Android;
+        var store = isAndroid ? "google" : "apple";
+        var url = (serverDomain ?? "http://dashboard.ttpsdk.info") + "/clik-packages/" + store + "/" + bundleId;
+        string resStr = null;
+        if (TTPEditorUtils.DownloadStringToFile(url, "Assets/StreamingAssets/clik-packages.json", out resStr))
+        {
+            Debug.Log("BuilderDetermineIncludedServices:: download result: " + resStr ?? "null");
+            if (!string.IsNullOrEmpty(resStr))
+            {
+                var includedServices = GetInclusionScriptableObject(true);
+                if (TTPJson.Deserialize(resStr) is List<object> serviceList)
+                {
+                    foreach (var serviceName in serviceList)
+                    {
+                        if (serviceName is string serviceStr)
+                        {
+                            switch (serviceStr)
+                            {
+                                case Constants.PACAKAGES_APPSFLYER:
+                                    includedServices.appsFlyer = true;
+                                    break;
+                                case Constants.PACAKAGES_ANALYTICS:
+                                    includedServices.analytics = true;
+                                    break;
+                                case Constants.PACAKAGES_CRASHTOOL:
+                                    includedServices.crashTool = true;
+                                    break;
+                                case Constants.PACAKAGES_BANNERS:
+                                    includedServices.banners = true;
+                                    break;
+                                case Constants.PACAKAGES_RV_INTER:
+                                    includedServices.rvInter = true;
+                                    break;
+                                case Constants.PACAKAGES_OPENADS:
+                                    includedServices.openAds = true;
+                                    break;
+                                case Constants.PACAKAGES_RV:
+                                    includedServices.rvs = true;
+                                    break;
+                                case Constants.PACAKAGES_INTERSTITIALS:
+                                    includedServices.interstitials = true;
+                                    break;
+                                case Constants.PACAKAGES_PRIVACY_SETTINGS:
+                                    includedServices.privacySettings = true;
+                                    break;
+                                case Constants.PACAKAGES_RATEUS:
+                                    includedServices.rateUs = true;
+                                    break;
+                                case Constants.PACAKAGES_PROMOTION:
+                                    includedServices.promotion = true;
+                                    break;
+                            }
+                        }
+                    }
+                    SaveInclusionScriptableObject(includedServices);
+                }
+            }
+        }
+    }
+
     private class AndroidGradlePreprocess : IPostGenerateGradleAndroidProject
     {
         public int callbackOrder { get { return 0; } }
@@ -1165,13 +1520,13 @@ public class CLIKConfiguration : EditorWindow
             
             var exclusionsList = new List<string>
             {
-                "TT_Plugins_Billing",
+                "TT_Plugins_Banners_Mopub",
+                "TT_Plugins_Banners_MoPub",
                 "TT_Plugins_CrossDevicePersistency",
                 "TT_Plugins_CrossPromotion",
                 "TT_Plugins_DeltaDnaAgent",
                 "TT_Plugins_FlurryAgent",
                 "TT_Plugins_NativeCampaign",
-                "TT_Plugins_Promotion",
                 "TT_Plugins_Share",
                 "TT_Plugins_Social",
 
@@ -1233,7 +1588,12 @@ public class CLIKConfiguration : EditorWindow
             {
                 exclusionsList.Add("TT_Plugins_RewardedInterstitials");
             }
-            if (!includedServices.banners && !includedServices.rvs && !includedServices.openAds && !includedServices.rvInter)
+
+            if (!includedServices.promotion)
+            {
+                exclusionsList.Add("TT_Plugins_Promotion");
+            }
+            if (!includedServices.banners && !includedServices.rvs && !includedServices.openAds && !includedServices.rvInter && !includedServices.promotion)
             {
                 exclusionsList.Add("TT_Plugins_PopupMgr");
             }
@@ -1245,6 +1605,7 @@ public class CLIKConfiguration : EditorWindow
             {
                 exclusionsList.Add("TT_Plugins_Privacy_Settings");
             }
+            
             if (!includedServices.openAds && !includedServices.interstitials && !includedServices.rvs && !includedServices.banners)
             {
                 exclusionsList.Add("TT_Plugins_ECPM");
@@ -1260,7 +1621,7 @@ public class CLIKConfiguration : EditorWindow
             return mainGradle.Replace("@@TT_PLUGINS_DEPENDENCIES@@", implementationStr);
         }
     }
-#if UNITY_IOS 
+#if UNITY_IOS
     private class PostProcess : IPostprocessBuildWithReport
     {
         public int callbackOrder { get; }
@@ -1279,7 +1640,7 @@ public class CLIKConfiguration : EditorWindow
 #endif
     private class ConfigurationSaverPreprocess : IPreprocessBuildWithReport
     {
-        public int callbackOrder { get { return 0; } }
+        public int callbackOrder { get { return 1; } }
         public void OnPreprocessBuild(BuildReport report)
         {
             Debug.Log("OnPreprocessBuild " + report.summary.platform);
@@ -1313,6 +1674,7 @@ public class CLIKConfiguration : EditorWindow
             if (includedServices.appsFlyer)
             {
                 services.Add("TT_Plugins_AppsFlyer");
+                
             }
             if (includedServices.crashTool)
             {
@@ -1370,6 +1732,12 @@ public class CLIKConfiguration : EditorWindow
                 popUpMgrIncluded = true;
                 services.Add("TT_Plugins_RewardedInterstitials");
             }
+
+            if (includedServices.promotion)
+            {
+                popUpMgrIncluded = true;
+                services.Add("TT_Plugins_Promotion");
+            }
             if (includedServices.rvs || includedServices.interstitials || includedServices.banners || includedServices.openAds || includedServices.rvInter)
             {
                 services.Add("TT_Plugins_ECPM");
@@ -1385,7 +1753,6 @@ public class CLIKConfiguration : EditorWindow
                 services.Add("TT_Plugins_Remote_Config");
                 
             }
-            
             var json = File.ReadAllText("Assets/Tabtale/TTPlugins/TT_Plugins.json");
             if (json != null)
             {

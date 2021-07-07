@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,16 +6,17 @@ namespace Tabtale.TTPlugins
 {
     public class TTPIncludedServicesScriptableObject : ScriptableObject
     {
-        public bool appsFlyer = true;
-        public bool analytics = true;
-        public bool banners = true;
-        public bool interstitials = true;
-        public bool rvs = true;
-        public bool crashTool = true;
-        public bool privacySettings = true;
-        public bool rateUs = true;
-        public bool openAds = true;
-        public bool rvInter = true;
+        public bool appsFlyer = false;
+        public bool analytics = false;
+        public bool banners = false;
+        public bool interstitials = false;
+        public bool rvs = false;
+        public bool crashTool = false;
+        public bool privacySettings = false;
+        public bool rateUs = false;
+        public bool openAds = false;
+        public bool rvInter = false;
+        public bool promotion = false;
     }
 
 }

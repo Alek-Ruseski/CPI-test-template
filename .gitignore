@@ -73,3 +73,6 @@ Assets/3rdParty/RayFire.meta
 
 # Dock Package
 Assets/3rdParty/Polytope_Harbor
+
+# we dont need the video files
+Assets/Videos/*

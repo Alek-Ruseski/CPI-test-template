@@ -5,7 +5,7 @@
   "orientation": "portrait",
   "geoLocationServer": "ttplugins.ttpsdk.info",
   "appId": "",
-  "bundleId": "com.snowfrozen.flappy.sausage.run",
+  "bundleId": "com.peacockgamesman.cell.jump",
   "testMode": false,
   "isAdMob": true,
   "appBuildConfig": {

@@ -4,12 +4,20 @@
   </string>
   <string name="default_web_client_id" translatable="false">
   </string>
-  <string name="admob_app_id" translatable="false">ca-app-pub-3940256099942544~3347511713</string>
-  <string name="firebase_database_url" translatable="false">https://shmulikfbtest.firebaseio.com</string>
-  <string name="gcm_defaultSenderId" translatable="false">385439196652</string>
-  <string name="google_storage_bucket" translatable="false">cl-rescue-driving-3d.appspot.com</string>
-  <string name="project_id" translatable="false">cl-rescue-driving-3d</string>
-  <string name="google_api_key" translatable="false">AIzaSyAP-Ml9oISy1F6c5f4jsPMws3RkoAFH1VQ</string>
-  <string name="google_app_id" translatable="false">1:385439196652:android:50a2a332ac672220880cc9</string>
-  <string name="client_id" translatable="false">385439196652-en590uhfdrvbd7hhst6gaksgod964ssv.apps.googleusercontent.com</string>
+  <string name="admob_app_id" translatable="false">
+  </string>
+  <string name="firebase_database_url" translatable="false">
+  </string>
+  <string name="gcm_defaultSenderId" translatable="false">
+  </string>
+  <string name="google_storage_bucket" translatable="false">
+  </string>
+  <string name="project_id" translatable="false">
+  </string>
+  <string name="google_api_key" translatable="false">
+  </string>
+  <string name="google_app_id" translatable="false">
+  </string>
+  <string name="client_id" translatable="false">
+  </string>
 </resources>
