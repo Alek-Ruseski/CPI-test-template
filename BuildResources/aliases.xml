@@ -1,0 +1,137 @@
+<appCredentials>
+<name>Cookie Runner</name>
+<bundle>com.peacockgamesman.cookie.runner</bundle>
+<alias>cookierunner</alias>
+<aliasPass>cookierunner1234</aliasPass>
+<keystore>peacockgamesman.keystore</keystore>
+</appCredentials>
+
+<appCredentials>
+<name>Poop Olympics</name>
+<bundle>com.peacockgamesman.poop.olympics</bundle>
+<alias>poopolympics</alias>
+<aliasPass>poopolympics1234</aliasPass>
+<keystore>peacockgamesman.keystore</keystore>
+</appCredentials>
+
+<appCredentials>
+<name>High Low Calorie</name>
+<bundle>com.peacockgamesman.high.low.calorie</bundle>
+<alias>higlowcalorie</alias>
+<aliasPass>higlowcalorie828282</aliasPass>
+<keystore>peacockgamesman.keystore</keystore>
+</appCredentials>
+
+<appCredentials>
+<name>Cell jump</name>
+<bundle>com.peacockgamesman.cell.jump</bundle>
+<alias></alias>
+<aliasPass></aliasPass>
+<keystore>peacockgamesman.keystore</keystore>
+</appCredentials>
+
+<appCredentials>
+<name>Save the Turtles</name>
+<bundle>com.peacockgamesman.save.the.turtles</bundle>
+<alias>savetheturtles</alias>
+<aliasPass>savetheturts1236</aliasPass>
+<keystore>SnowFrozenStudio (falling dance).keystore</keystore>
+</appCredentials>
+
+<appCredentials>
+<name>Cheerleader Run</name>
+<bundle>com.clownfishgamesstudio.cheerleader.run</bundle>
+<alias>chearleaderrun</alias>
+<aliasPass>chearleader1928319823</aliasPass>
+<keystore>SnowFrozenStudio (falling dance).keystore</keystore>
+</appCredentials>
+
+<appCredentials>
+<name>Tap Away</name>
+<bundle>com.clownfishgamesstudio.tap.away</bundle>
+<alias>tapaway</alias>
+<aliasPass>tapaway172873817</aliasPass>
+<keystore>SnowFrozenStudio (falling dance).keystore</keystore>
+</appCredentials>
+
+<appCredentials>
+<name>Shift it 3D</name>
+<bundle>com.clownfishgamesstudio.shift.it</bundle>
+<alias>shiftit3d</alias>
+<aliasPass>959595&^$%#jdkjdj</aliasPass>
+<keystore>SnowFrozenStudio (falling dance).keystore</keystore>
+</appCredentials>
+
+<appCredentials>
+<name>Water Dance</name>
+<bundle>com.peacockgamesman.water.dance</bundle>
+<alias>waterdance</alias>
+<aliasPass>81928KJNJ8KkKkpearl</aliasPass>
+<keystore>SnowFrozenStudio (falling dance).keystore</keystore>
+</appCredentials>
+
+<appCredentials>
+<name>Fruits 2048</name>
+<bundle>com.peacockgamesman.water.dance</bundle>
+<alias>fruits2</alias>
+<aliasPass>jsklwospkaoJOpP</aliasPass>
+<keystore>SnowFrozenStudio (falling dance).keystore</keystore>
+</appCredentials>
+
+<appCredentials>
+<name>Mermaid Salon</name>
+<bundle>com.peacockgamesman.mermaid.salon</bundle>
+<alias>mermaidsalon</alias>
+<aliasPass>LKSjhsL##093</aliasPass>
+<keystore>SnowFrozenStudio (falling dance).keystore</keystore>
+</appCredentials>
+
+<appCredentials>
+<name>Self Defense Girl</name>
+<bundle>com.snowfrozen.self.defense</bundle>
+<alias>killbill</alias>
+<aliasPass>LKJHPO8&6%4$###</aliasPass>
+<keystore>SnowFrozenStudio (falling dance).keystore</keystore>
+</appCredentials>
+
+<appCredentials>
+<name>Curset Run</name>
+<bundle>com.snowfrozen.corset.rush.run</bundle>
+<alias>corsetrun</alias>
+<aliasPass>@#7@9#dh_-dydy</aliasPass>
+<keystore>SnowFrozenStudio (falling dance).keystore</keystore>
+</appCredentials>
+
+<appCredentials>
+<name>Flappy Sausage</name>
+<bundle>com.snowfrozen.flappy.sausage.run</bundle>
+<alias>flappysausage</alias>
+<aliasPass>3jsdngfLNDSAKJ</aliasPass>
+<keystore>SnowFrozenStudio (falling dance).keystore</keystore>
+</appCredentials>
+
+<appCredentials>
+<name>Corset Salon</name>
+<bundle>com.snowfrozen.corset.salon</bundle>
+<alias>corsetsalon</alias>
+<aliasPass>kSIn564&))0)</aliasPass>
+<keystore>SnowFrozenStudio (falling dance).keystore</keystore>
+</appCredentials>
+
+<appCredentials>
+<name>Rescue Driving 3D</name>
+<bundle>com.snowfrozen.rescue.driving3d</bundle>
+<alias>rescueracing3d</alias>
+<aliasPass>ghghH765PQasd</aliasPass>
+<keystore>SnowFrozenStudio (falling dance).keystore</keystore>
+</appCredentials>
+
+<appCredentials>
+<name>Self Defense</name>
+<bundle>com.snowfrozen.rescue.driving3d</bundle>
+<alias>selfdefensegirl</alias>
+<aliasPass>jSAYoKSisklpqqS</aliasPass>
+<keystore>SnowFrozenStudio (falling dance).keystore</keystore>
+</appCredentials>
+
+
