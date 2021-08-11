@@ -128,9 +128,34 @@
 
 <appCredentials>
 <name>Self Defense</name>
-<bundle>com.snowfrozen.rescue.driving3d</bundle>
+<bundle></bundle>
 <alias>selfdefensegirl</alias>
 <aliasPass>jSAYoKSisklpqqS</aliasPass>
+<keystore>SnowFrozenStudio (falling dance).keystore</keystore>
+</appCredentials>
+
+<appCredentials>
+<name>Racing Battle Royale</name>
+<bundle>com.newnormalgames.racemayhem</bundle>
+<alias>racemayhem</alias>
+<aliasPass>u5yZK5RyVrNWpzBp</aliasPass>
+<keystore>UNKNOWN</keystore>
+<keystorePass>GnAS4s77dyDdc3jS</keystore>
+</appCredentials>
+
+<appCredentials>
+<name>Falling dance</name>
+<bundle>com.snowfrozen.falling.dance</bundle>
+<alias>fallingdance</alias>
+<aliasPass>4j*3msk2;'r'd;s""</aliasPass>
+<keystore>SnowFrozenStudio (falling dance).keystore</keystore>
+</appCredentials>
+
+<appCredentials>
+<name>Pole dance</name>
+<bundle>com.snowfrozen.pole.dance</bundle>
+<alias>poledance</alias>
+<aliasPass>4j*3msk2;'r'd;s""</aliasPass>
 <keystore>SnowFrozenStudio (falling dance).keystore</keystore>
 </appCredentials>
 
